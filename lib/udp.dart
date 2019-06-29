@@ -31,10 +31,6 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *  
  */
-
-/// Support for doing something awesome.
-///
-/// More dartdocs go here.
 library udp;
 
 export 'src/udp_base.dart' show UDP;
