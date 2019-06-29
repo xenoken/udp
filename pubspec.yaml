@@ -1,6 +1,6 @@
 name: udp
 description: A starting point for Dart libraries or applications.
-version: 1.0.0
+version: 1.0.1
 homepage: http://github.com/xenoken/udp
 repository: http://github.com/xenoken/udp
 issue_tracker: http://github.com/xenoken/udp/issues
