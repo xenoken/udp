@@ -8,7 +8,7 @@ A simple usage example:
 import 'package:udp/udp.dart';
 
 
-main()async {
+main() async {
 
   // creates a UDP instance and binds it to the local address and the port 42.
   var sender = await UDP.bind(Endpoint.loopback(port:Port(42)));
