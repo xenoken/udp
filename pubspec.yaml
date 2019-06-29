@@ -1,10 +1,10 @@
 name: udp
-description: A starting point for Dart libraries or applications.
-version: 1.0.1
-homepage: http://github.com/xenoken/udp
-repository: http://github.com/xenoken/udp
-issue_tracker: http://github.com/xenoken/udp/issues
-author: Ken <ekeohak@gmail.com>
+description: Lightweight, efficient, and easy-to-use UDP library for Dart. Supports Unicast, Broadcast, and Loopback communications.
+version: 1.0.2
+homepage: https://github.com/xenoken/udp
+repository: https://github.com/xenoken/udp
+issue_tracker: https://github.com/xenoken/udp/issues
+author: Ken Ekeoha <ekeohak@gmail.com>
 
 environment:
   sdk: '>=2.2.0 <3.0.0'
