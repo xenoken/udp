@@ -34,14 +34,24 @@
 
 import 'dart:async';
 import 'dart:io';
+
 import 'udp_endpoint.dart';
 
-typedef UDPReceiveCallback = void Function(Datagram);
+typedef DatagramCallback = void Function(Datagram);
 
-/// sends or receives UDP packets.
+/// [UDP] sends or receives UDP packets.
 ///
-/// a [UDP] instance can send or receive packets to and from [Endpoint]s.
+/// a [UDP] instance can send packets to or receive packets from [Endpoint]s.
 class UDP {
+  bool _listening = false;
+
+  bool _closed = false;
+
+  /// returns True if this [UDP] instance is closed.
+  bool get closed => _closed;
+
+  StreamSubscription _streamSubscription;
+
   Endpoint _localep;
 
   /// the [Endpoint] this [UDP] instance is bound to.
@@ -80,7 +90,10 @@ class UDP {
   /// [remoteEndpoint] - the remote endpoint.
   ///
   /// returns the number of bytes sent.
+  /// if the udp was already closed at the time of the call, returns -1.
   Future<int> send(List<int> data, Endpoint remoteEndpoint) async {
+    if (_socket == null || _closed) return -1;
+
     return Future.microtask(() async {
       var prevState = _socket.broadcastEnabled;
       if (remoteEndpoint.isBroadcast) {
@@ -104,25 +117,36 @@ class UDP {
   /// stops listening.
   /// whenever new data is received, it is bundled in a [Datagram] and passed
   /// to the specified [callback].
+  /// A udp instance can be listened to only once.
   ///
   /// returns a [Future] that completes when the time runs out.
-  Future<void> listen(UDPReceiveCallback callback, Duration timeout) async {
+  Future<void> listen(DatagramCallback callback, Duration timeout) async {
     // callback must not be null.
     assert(callback != null);
 
-    StreamSubscription subscription;
+    if (_socket == null || _closed || _listening) return null;
 
-    subscription = _socket.listen((event) {
+    _listening = true;
+
+    _streamSubscription = _socket.listen((event) {
       if (event == RawSocketEvent.read) {
         callback(_socket.receive());
       }
     });
 
     return Future.delayed(timeout).then((value) {
-      subscription?.cancel();
+      _streamSubscription?.cancel();
     });
   }
 
   /// closes the [UDP] instance and the underlying socket.
-  void close() => _socket?.close();
+  void close() {
+    _listening = false;
+
+    _closed = true;
+
+    _streamSubscription?.cancel();
+
+    _socket?.close();
+  }
 }

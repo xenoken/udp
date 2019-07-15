@@ -33,6 +33,7 @@
  */
 
 import 'dart:io';
+
 import 'udp_port.dart';
 
 /// [Endpoint] represents a destination for UDP packets.
@@ -65,21 +66,21 @@ class Endpoint {
   /// Creates a Broadcast endpoint.
   ///
   ///
-  Endpoint.broadcast({port = Port.any}) {
+  Endpoint.broadcast({Port port = Port.any}) {
     this._address = InternetAddress("255.255.255.255");
     this._port = port;
     this.isBroadcast = true;
   }
 
-  /// The address of the local machine 127.0.0.1.
+  /// An endpoint with the address of the local machine 127.0.0.1.
   ///
   /// [port] represents the port the endpoint is bound to.
-  Endpoint.loopback({port = Port.any}) {
+  Endpoint.loopback({Port port = Port.any}) {
     this._address = InternetAddress.loopbackIPv4;
     this._port = port;
   }
 
-  /// Creates a Unicast endpoint
+  /// Creates a Unicast endpoint.
   ///
   ///
   Endpoint.unicast(this._address, this._port);

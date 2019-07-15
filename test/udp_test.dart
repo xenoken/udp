@@ -34,8 +34,8 @@
 
 import 'dart:io';
 
-import 'package:udp/udp.dart';
 import 'package:test/test.dart';
+import 'package:udp/udp.dart';
 
 void main() {
   group("udp", () {
@@ -94,6 +94,62 @@ void main() {
       ]);
 
       equals(result == "Foo").describe(StringDescription("Broadcast"));
+    });
+
+    test('Second Listen on the same instance should be possible.', () async {
+      var udp = await UDP.bind(Endpoint.loopback());
+
+      var receiver1 = await UDP.bind(Endpoint.loopback());
+
+      String value = 'original';
+
+      await receiver1.listen((datagram) {
+        print(String.fromCharCodes(datagram.data));
+      }, Duration(seconds: 5));
+
+      // this listen request doesn't do anything.
+      await receiver1.listen((datagram) {
+        value = 'modified';
+        print(String.fromCharCodes(datagram.data));
+      }, Duration(seconds: 5));
+
+      await udp.send("Foo".codeUnits, Endpoint.broadcast());
+
+      receiver1.close();
+
+      udp.close();
+
+      expect(value == 'original', isTrue);
+    });
+
+    test("Using a closed UDP instance is not possible.", () async {
+      var udp = await UDP.bind(Endpoint.loopback());
+
+      var receiver1 = await UDP.bind(Endpoint.loopback());
+
+      receiver1.close();
+
+      udp.close(); // trying to see what happens if a send or receive method is called on a closed udp instance.
+
+      await receiver1.listen((datagram) {
+        print(String.fromCharCodes(datagram.data));
+      }, Duration(seconds: 5));
+
+      var dataLength = await udp.send("Foo".codeUnits, Endpoint.broadcast());
+
+      expect(dataLength == -1, isTrue);
+    });
+
+    test("closed is True for closed udp instances.", () async {
+      var udp = await UDP.bind(Endpoint.loopback());
+
+      var receiver1 = await UDP.bind(Endpoint.loopback());
+
+      receiver1.close();
+
+      udp.close();
+
+      expect(receiver1.closed && udp.closed, isTrue);
     });
   });
 }

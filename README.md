@@ -14,7 +14,7 @@ main() async {
   var sender = await UDP.bind(Endpoint.loopback(port:Port(42)));
 
   // send a simple string to a broadcast endpoint on port 21.
-  var dataLength = sender.send("Hello World!".codeUnits,
+  var dataLength = await sender.send("Hello World!".codeUnits,
       Endpoint.broadcast(port: Port(21)));
 
   stdout.write("${dataLength} bytes sent.");

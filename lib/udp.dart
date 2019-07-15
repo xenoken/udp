@@ -34,5 +34,5 @@
 library udp;
 
 export 'src/udp_base.dart' show UDP;
-export 'src/udp_port.dart' show Port;
 export 'src/udp_endpoint.dart' show Endpoint;
+export 'src/udp_port.dart' show Port;
