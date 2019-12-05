@@ -34,29 +34,30 @@
 
 import 'dart:io';
 
+import 'package:pedantic/pedantic.dart';
 import 'package:udp/udp.dart';
 
 main() async {
-  // creates a UDP instance and binds it to the local address and the port 42.
-  var sender = await UDP.bind(Endpoint.loopback(port: Port(42)));
+  // MULTICAST
+  var multicastEndpoint =
+      Endpoint.multicast(InternetAddress("239.1.2.3"), port: Port(54321));
 
-  // send a simple string to a broadcast endpoint on port 21.
-  var dataLength = await sender.send(
-      "Hello World!".codeUnits, Endpoint.broadcast(port: Port(21)));
+  var receiver = await UDP.bind(multicastEndpoint);
 
-  stdout.write("${dataLength} bytes sent.");
+  var sender = await UDP.bind(Endpoint.any());
 
-  // creates a new UDP instance and binds it to the local address and the port
-  // 39.
-  var receiver = await UDP.bind(Endpoint.loopback(port: Port(39)));
+  unawaited(receiver.listen((datagram) {
+    if (datagram != null) {
+      var str = String.fromCharCodes(datagram?.data);
 
-  // receiving\listening
-  await receiver.listen((datagram) {
-    var str = String.fromCharCodes(datagram.data);
-    stdout.write(str);
-  },timeout: Duration(seconds: 20));
+      stdout.write(str);
+    }
+  }));
 
-  // close the UDP instances and their sockets.
+  await sender.send("Foo".codeUnits, multicastEndpoint);
+
+  await Future.delayed(Duration(seconds:5));
+
   sender.close();
   receiver.close();
 }

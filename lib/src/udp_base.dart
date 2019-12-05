@@ -39,6 +39,7 @@ import 'udp_endpoint.dart';
 
 typedef DatagramCallback = void Function(Datagram);
 
+
 /// [UDP] sends or receives UDP packets.
 ///
 /// a [UDP] instance can send packets to or receive packets from [Endpoint]s.
@@ -73,15 +74,24 @@ class UDP {
   ///
   /// returns the [UDP] instance.
   static Future<UDP> bind(Endpoint localEndpoint) async {
-    var udp = UDP._(localEndpoint);
+    var ep = localEndpoint;
 
-    await RawDatagramSocket.bind(
-            localEndpoint.address, localEndpoint.port.value)
+    if (localEndpoint.isMulticast) {
+      ep = Endpoint.any(port: localEndpoint.port);
+    }
+
+    return await RawDatagramSocket.bind(ep.address, ep.port.value)
         .then((socket) {
-      udp._socket = socket;
-    });
+      var udp = UDP._(localEndpoint);
 
-    return udp;
+      if (localEndpoint.isMulticast) {
+        socket.joinMulticast(localEndpoint.address);
+      }
+
+      udp._socket = socket;
+
+      return udp;
+    });
   }
 
   /// Sends some [data] to a [remoteEndpoint].
@@ -96,6 +106,7 @@ class UDP {
 
     return Future.microtask(() async {
       var prevState = _socket.broadcastEnabled;
+
       if (remoteEndpoint.isBroadcast) {
         _socket.broadcastEnabled = true;
       }
@@ -109,22 +120,31 @@ class UDP {
     });
   }
 
-  /// Tells the [UDP] instance to listen for incoming messages for a certain
-  /// amount of time.
+  /// Tells the [UDP] instance to listen for incoming messages.
   ///
+  /// Optionally, a [timeout] can be specified. if it is, the [UDP] instance
+  /// stops listening after the duration has passed.
   ///
-  /// After the duration specfied by [timeout] has passed, the [UDP] instance
-  /// stops listening.
   /// whenever new data is received, it is bundled in a [Datagram] and passed
   /// to the specified [callback].
+  ///
   /// A udp instance can be listened to only once.
   ///
   /// returns a [Future] that completes when the time runs out.
-  Future<void> listen(DatagramCallback callback, Duration timeout) async {
+  /// the returned value is false if:
+  ///
+  /// - the udp instance was already listened to;
+  ///
+  /// - the udp instance is closed;
+  ///
+  /// - the udp internal state is not valid (e.g. no valid socket);
+  ///
+  /// the returned value is true otherwise.
+  Future<bool> listen(DatagramCallback callback, {Duration timeout}) async {
     // callback must not be null.
     assert(callback != null);
 
-    if (_socket == null || _closed || _listening) return null;
+    if (_socket == null || _closed || _listening) return Future.value(false);
 
     _listening = true;
 
@@ -134,8 +154,11 @@ class UDP {
       }
     });
 
+    if (timeout == null) return Future.value(true);
+
     return Future.delayed(timeout).then((value) {
       _streamSubscription?.cancel();
+      return true;
     });
   }
 

@@ -32,6 +32,7 @@
  *  
  */
 
+import 'dart:cli';
 import 'dart:io';
 
 import 'package:test/test.dart';
@@ -39,117 +40,228 @@ import 'package:udp/udp.dart';
 
 void main() {
   group("udp", () {
+    /*
+    UNICAST
+    */
     test("Unicast", () async {
       // create sender
 
       String result = "";
-      await Future.wait([
-        UDP
-            .bind(Endpoint.unicast(InternetAddress("127.0.0.1"), Port(42)))
-            .then((udp) {
-          udp.listen((dgram) {
-            result = String.fromCharCodes(dgram.data);
-          }, Duration(seconds: 15));
-        }),
-        UDP.bind(Endpoint.loopback(port: Port(24))).then((udp) {
-          udp.send("Foo".codeUnits,
-              Endpoint.unicast(InternetAddress("127.0.0.1"), Port(42)));
-        })
-      ]);
 
-      equals(result == "Foo").describe(StringDescription("Unicast"));
+      UDP receiver, sender;
+
+      waitFor(Future.wait([
+        UDP
+            .bind(Endpoint.unicast(InternetAddress("127.0.0.1"), port:Port(42)))
+            .then((udp) {
+          receiver = udp;
+          return udp.listen((dgram) {
+            result = String.fromCharCodes(dgram.data);
+          }, timeout: Duration(seconds: 5));
+        }),
+        UDP
+            .bind(Endpoint.unicast(InternetAddress("127.0.0.1"), port:Port(24)))
+            .then((udp) {
+          sender = udp;
+          return udp.send("Foo".codeUnits, Endpoint.broadcast(port: Port(42)));
+        })
+      ]));
+
+      receiver?.close();
+      sender?.close();
+
+      expect(result, equals("Foo"));
     });
 
+    /*
+    LOOPBACK
+    */
     test("Loopback", () async {
       // create sender
 
       String result = "";
-      await Future.wait([
+
+      UDP receiver, sender;
+
+      waitFor(Future.wait([
         UDP.bind(Endpoint.loopback(port: Port(42))).then((udp) {
-          udp.listen((dgram) {
+          receiver = udp;
+          return udp.listen((dgram) {
             result = String.fromCharCodes(dgram.data);
-          }, Duration(seconds: 15));
+          }, timeout: Duration(seconds: 5));
         }),
         UDP.bind(Endpoint.loopback(port: Port(24))).then((udp) {
-          udp.send("Foo".codeUnits, Endpoint.loopback(port: Port(42)));
+          sender = udp;
+          return udp.send("Foo".codeUnits, Endpoint.loopback(port: Port(42)));
         })
-      ]);
+      ]));
 
-      equals(result == "Foo").describe(StringDescription("Unicast"));
+      receiver?.close();
+      sender?.close();
+
+      expect(result, equals("Foo"));
     });
 
+    /*
+    BROADCAST
+    */
     test("Broadcast", () async {
+      String result = "";
+
+
+      UDP receiver, sender;
+      waitFor(Future.wait([
+        UDP.bind(Endpoint.any(port: Port(42))).then((udp) {
+          receiver = udp;
+          return udp.listen((dgram) {
+            result = String.fromCharCodes(dgram.data);
+          }, timeout: Duration(seconds: 5));
+        }),
+        UDP.bind(Endpoint.any(port: Port(24))).then((udp) {
+          sender = udp;
+          return udp.send("Foo".codeUnits, Endpoint.broadcast(port: Port(42)));
+        })
+      ]));
+
+      receiver?.close();
+      sender?.close();
+
+      expect(result, equals("Foo"));
+    });
+
+    /*
+    MULTICAST
+    */
+    test("Multicast", () async {
       // create sender
 
       String result = "";
-      await Future.wait([
-        UDP.bind(Endpoint.loopback()).then((udp) {
-          udp.listen((dgram) {
+
+      UDP receiver, sender;
+
+      var multicastEndpoint = Endpoint.multicast(InternetAddress("239.1.2.3"),port: Port(4540));
+
+      waitFor(Future.wait([
+        UDP.bind(multicastEndpoint).then((udp) {
+          return udp.listen((dgram) {
+            if (dgram == null) return;
             result = String.fromCharCodes(dgram.data);
-          }, Duration(seconds: 15));
+          }, timeout: Duration(seconds: 10));
         }),
-        UDP.bind(Endpoint.loopback()).then((udp) {
-          udp.send("Foo".codeUnits, Endpoint.broadcast());
+        UDP.bind(Endpoint.any()).then((udp) {
+          sender = udp;
+          return sender.send("Foo".codeUnits, multicastEndpoint);
         })
-      ]);
+      ]));
 
-      equals(result == "Foo").describe(StringDescription("Broadcast"));
+      receiver?.close();
+      sender?.close();
+
+      expect(result, equals("Foo"));
     });
 
-    test('Second Listen on the same instance should be possible.', () async {
-      var udp = await UDP.bind(Endpoint.loopback());
 
-      var receiver1 = await UDP.bind(Endpoint.loopback());
+    /*
+    Second listen is not possible.
+    */
 
-      String value = 'original';
+    test('Second Listen on the same instance should not be possible.',
+            () async {
+          var udp = await UDP.bind(Endpoint.loopback());
 
-      await receiver1.listen((datagram) {
-        print(String.fromCharCodes(datagram.data));
-      }, Duration(seconds: 5));
+          var receiver = await UDP.bind(Endpoint.loopback());
 
-      // this listen request doesn't do anything.
-      await receiver1.listen((datagram) {
-        value = 'modified';
-        print(String.fromCharCodes(datagram.data));
-      }, Duration(seconds: 5));
+          String value = 'original';
 
-      await udp.send("Foo".codeUnits, Endpoint.broadcast());
+          await receiver.listen((datagram) {
+            print(String.fromCharCodes(datagram.data));
+          }, timeout: Duration(seconds: 5));
 
-      receiver1.close();
+          // this listen request doesn't do anything.
+          await receiver.listen((datagram) {
+            value = 'modified';
+            print(String.fromCharCodes(datagram.data));
+          }, timeout: Duration(seconds: 5));
 
-      udp.close();
+          await udp.send("Foo".codeUnits, Endpoint.broadcast());
 
-      expect(value == 'original', isTrue);
-    });
+          receiver.close();
+
+          udp.close();
+
+          expect(value == 'original', isTrue);
+        });
+
+    /*
+    A closed UDP instance can't be reused.
+    */
 
     test("Using a closed UDP instance is not possible.", () async {
       var udp = await UDP.bind(Endpoint.loopback());
 
-      var receiver1 = await UDP.bind(Endpoint.loopback());
+      var receiver = await UDP.bind(Endpoint.loopback());
 
-      receiver1.close();
+      receiver.close();
 
-      udp.close(); // trying to see what happens if a send or receive method is called on a closed udp instance.
+      udp
+          .close(); // trying to see what happens if a send or receive method is called on a closed udp instance.
 
-      await receiver1.listen((datagram) {
+      await receiver.listen((datagram) {
         print(String.fromCharCodes(datagram.data));
-      }, Duration(seconds: 5));
+      }, timeout: Duration(seconds: 5));
 
       var dataLength = await udp.send("Foo".codeUnits, Endpoint.broadcast());
 
       expect(dataLength == -1, isTrue);
     });
 
+    /*
+    UDP.Close() sets UDP.closed to TRUE
+    */
+
     test("closed is True for closed udp instances.", () async {
       var udp = await UDP.bind(Endpoint.loopback());
 
-      var receiver1 = await UDP.bind(Endpoint.loopback());
+      var receiver = await UDP.bind(Endpoint.loopback());
 
-      receiver1.close();
+      receiver.close();
 
       udp.close();
 
-      expect(receiver1.closed && udp.closed, isTrue);
+      expect(receiver.closed && udp.closed, isTrue);
     });
+
+    /*
+    UDP listen can run forever if no timeout is set.
+    */
+
+    test("UDP listen can run forever if no timeout is set.", () async {
+      var receiver = await UDP.bind(Endpoint.any());
+
+      await receiver.listen((datagram) {});
+
+      await Future.delayed(Duration(seconds: 5));
+
+      expect(receiver.closed, isFalse);
+
+      receiver.close();
+    });
+
+    /*
+    A UDP instance listening indefinitely can be stopped by close.
+    */
+
+    test(" A UDP instance listening indefinitely can be stopped by close.",
+            () async {
+          var receiver = await UDP.bind(Endpoint.any());
+
+          await receiver.listen((datagram) {});
+
+          await Future.delayed(Duration(seconds: 10));
+
+          receiver.close();
+
+          expect(receiver.closed, isTrue);
+        });
   });
 }

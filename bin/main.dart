@@ -53,7 +53,7 @@ main() async {
   await receiver.listen((datagram) {
     var str = String.fromCharCodes(datagram.data);
     stdout.write(str);
-  }, Duration(seconds: 20));
+  },timeout: Duration(seconds: 20));
 
   // close the UDP instances and their sockets.
   sender.close();

@@ -40,36 +40,36 @@ import 'udp_port.dart';
 ///
 /// Bundles an [InternetAddress] and a [Port].
 class Endpoint {
-  InternetAddress _address;
 
+  InternetAddress _address;
   /// The address of this endpoint.
   InternetAddress get address => _address;
 
   Port _port;
-
   /// The port of this endpoint.
   Port get port => _port;
-
   /// Whether the endpoint is a broadcast endpoint.
   bool _isBroadcast = false;
-
   /// Whether the endpoint is a broadcast endpoint.
   bool get isBroadcast => _isBroadcast;
+  /// Whether the endpoint is a multicast endpoint.
+  bool _isMulticast = false;
+  /// Whether the endpoint is a multicast endpoint.
+  bool get isMulticast => _isMulticast;
 
-  /// Whether the endpoint is a broadcast endpoint.
-  set isBroadcast(bool isBroadcast) {
-    _isBroadcast = isBroadcast;
+
+
+  /// Creates a Unicast endpoint.
+  Endpoint.unicast(this._address, {Port port = Port.any}){
+    this._port = port;
   }
 
-  static Endpoint _any = Endpoint._(InternetAddress.anyIPv4, Port(0));
-
   /// Creates a Broadcast endpoint.
-  ///
-  ///
   Endpoint.broadcast({Port port = Port.any}) {
     this._address = InternetAddress("255.255.255.255");
     this._port = port;
-    this.isBroadcast = true;
+    this._isBroadcast = true;
+
   }
 
   /// An endpoint with the address of the local machine 127.0.0.1.
@@ -80,15 +80,22 @@ class Endpoint {
     this._port = port;
   }
 
-  /// Creates a Unicast endpoint.
+  /// Creates a Multicast endpoint.
   ///
-  ///
-  Endpoint.unicast(this._address, this._port);
+  /// [_address] should be a valid Multicast address in the range 224.0.0.0
+  /// to 239.255.255.255.
+  Endpoint.multicast(this._address,{Port port = Port.any}) {
+    this._port = port;
+    this._isMulticast = true;
+  }
 
   /// Creates a random Endpoint.
   ///
-  /// This leaves the OS to choose an appropriate [InternetAddress] and [Port].
-  factory Endpoint.any() => _any;
+  /// The OS will choose an appropriate [InternetAddress] and [Port].
+  Endpoint.any({port = Port.any}){
+    this._address = InternetAddress.anyIPv4;
+    this._port = port;
+  }
 
   // internal constructor.
   Endpoint._(this._address, this._port);
