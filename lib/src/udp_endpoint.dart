@@ -40,27 +40,30 @@ import 'udp_port.dart';
 ///
 /// Bundles an [InternetAddress] and a [Port].
 class Endpoint {
-
   InternetAddress _address;
+
   /// The address of this endpoint.
   InternetAddress get address => _address;
 
   Port _port;
+
   /// The port of this endpoint.
   Port get port => _port;
+
   /// Whether the endpoint is a broadcast endpoint.
   bool _isBroadcast = false;
+
   /// Whether the endpoint is a broadcast endpoint.
   bool get isBroadcast => _isBroadcast;
+
   /// Whether the endpoint is a multicast endpoint.
   bool _isMulticast = false;
+
   /// Whether the endpoint is a multicast endpoint.
   bool get isMulticast => _isMulticast;
 
-
-
   /// Creates a Unicast endpoint.
-  Endpoint.unicast(this._address, {Port port = Port.any}){
+  Endpoint.unicast(this._address, {Port port = Port.any}) {
     this._port = port;
   }
 
@@ -69,7 +72,6 @@ class Endpoint {
     this._address = InternetAddress("255.255.255.255");
     this._port = port;
     this._isBroadcast = true;
-
   }
 
   /// An endpoint with the address of the local machine 127.0.0.1.
@@ -84,7 +86,7 @@ class Endpoint {
   ///
   /// [_address] should be a valid Multicast address in the range 224.0.0.0
   /// to 239.255.255.255.
-  Endpoint.multicast(this._address,{Port port = Port.any}) {
+  Endpoint.multicast(this._address, {Port port = Port.any}) {
     this._port = port;
     this._isMulticast = true;
   }
@@ -92,7 +94,7 @@ class Endpoint {
   /// Creates a random Endpoint.
   ///
   /// The OS will choose an appropriate [InternetAddress] and [Port].
-  Endpoint.any({port = Port.any}){
+  Endpoint.any({port = Port.any}) {
     this._address = InternetAddress.anyIPv4;
     this._port = port;
   }

@@ -39,7 +39,6 @@ import 'udp_endpoint.dart';
 
 typedef DatagramCallback = void Function(Datagram);
 
-
 /// [UDP] sends or receives UDP packets.
 ///
 /// a [UDP] instance can send packets to or receive packets from [Endpoint]s.

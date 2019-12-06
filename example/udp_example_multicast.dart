@@ -56,7 +56,7 @@ main() async {
 
   await sender.send("Foo".codeUnits, multicastEndpoint);
 
-  await Future.delayed(Duration(seconds:5));
+  await Future.delayed(Duration(seconds: 5));
 
   sender.close();
   receiver.close();

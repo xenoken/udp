@@ -44,15 +44,14 @@ void main() {
     UNICAST
     */
     test("Unicast", () async {
-      // create sender
-
       String result = "";
 
       UDP receiver, sender;
 
       waitFor(Future.wait([
         UDP
-            .bind(Endpoint.unicast(InternetAddress("127.0.0.1"), port:Port(42)))
+            .bind(
+                Endpoint.unicast(InternetAddress("127.0.0.1"), port: Port(42)))
             .then((udp) {
           receiver = udp;
           return udp.listen((dgram) {
@@ -60,7 +59,8 @@ void main() {
           }, timeout: Duration(seconds: 5));
         }),
         UDP
-            .bind(Endpoint.unicast(InternetAddress("127.0.0.1"), port:Port(24)))
+            .bind(
+                Endpoint.unicast(InternetAddress("127.0.0.1"), port: Port(24)))
             .then((udp) {
           sender = udp;
           return udp.send("Foo".codeUnits, Endpoint.broadcast(port: Port(42)));
@@ -77,8 +77,6 @@ void main() {
     LOOPBACK
     */
     test("Loopback", () async {
-      // create sender
-
       String result = "";
 
       UDP receiver, sender;
@@ -108,7 +106,6 @@ void main() {
     test("Broadcast", () async {
       String result = "";
 
-
       UDP receiver, sender;
       waitFor(Future.wait([
         UDP.bind(Endpoint.any(port: Port(42))).then((udp) {
@@ -133,13 +130,12 @@ void main() {
     MULTICAST
     */
     test("Multicast", () async {
-      // create sender
-
       String result = "";
 
       UDP receiver, sender;
 
-      var multicastEndpoint = Endpoint.multicast(InternetAddress("239.1.2.3"),port: Port(4540));
+      var multicastEndpoint =
+          Endpoint.multicast(InternetAddress("239.1.2.3"), port: Port(4540));
 
       waitFor(Future.wait([
         UDP.bind(multicastEndpoint).then((udp) {
@@ -160,42 +156,39 @@ void main() {
       expect(result, equals("Foo"));
     });
 
-
     /*
     Second listen is not possible.
     */
-
     test('Second Listen on the same instance should not be possible.',
-            () async {
-          var udp = await UDP.bind(Endpoint.loopback());
+        () async {
+      var udp = await UDP.bind(Endpoint.loopback());
 
-          var receiver = await UDP.bind(Endpoint.loopback());
+      var receiver = await UDP.bind(Endpoint.loopback());
 
-          String value = 'original';
+      String value = 'original';
 
-          await receiver.listen((datagram) {
-            print(String.fromCharCodes(datagram.data));
-          }, timeout: Duration(seconds: 5));
+      await receiver.listen((datagram) {
+        print(String.fromCharCodes(datagram.data));
+      }, timeout: Duration(seconds: 5));
 
-          // this listen request doesn't do anything.
-          await receiver.listen((datagram) {
-            value = 'modified';
-            print(String.fromCharCodes(datagram.data));
-          }, timeout: Duration(seconds: 5));
+      // this listen request doesn't do anything.
+      await receiver.listen((datagram) {
+        value = 'modified';
+        print(String.fromCharCodes(datagram.data));
+      }, timeout: Duration(seconds: 5));
 
-          await udp.send("Foo".codeUnits, Endpoint.broadcast());
+      await udp.send("Foo".codeUnits, Endpoint.broadcast());
 
-          receiver.close();
+      receiver.close();
 
-          udp.close();
+      udp.close();
 
-          expect(value == 'original', isTrue);
-        });
+      expect(value == 'original', isTrue);
+    });
 
     /*
     A closed UDP instance can't be reused.
     */
-
     test("Using a closed UDP instance is not possible.", () async {
       var udp = await UDP.bind(Endpoint.loopback());
 
@@ -203,8 +196,7 @@ void main() {
 
       receiver.close();
 
-      udp
-          .close(); // trying to see what happens if a send or receive method is called on a closed udp instance.
+      udp.close(); // trying to see what happens if a send or receive method is called on a closed udp instance.
 
       await receiver.listen((datagram) {
         print(String.fromCharCodes(datagram.data));
@@ -218,7 +210,6 @@ void main() {
     /*
     UDP.Close() sets UDP.closed to TRUE
     */
-
     test("closed is True for closed udp instances.", () async {
       var udp = await UDP.bind(Endpoint.loopback());
 
@@ -234,7 +225,6 @@ void main() {
     /*
     UDP listen can run forever if no timeout is set.
     */
-
     test("UDP listen can run forever if no timeout is set.", () async {
       var receiver = await UDP.bind(Endpoint.any());
 
@@ -250,18 +240,17 @@ void main() {
     /*
     A UDP instance listening indefinitely can be stopped by close.
     */
-
     test(" A UDP instance listening indefinitely can be stopped by close.",
-            () async {
-          var receiver = await UDP.bind(Endpoint.any());
+        () async {
+      var receiver = await UDP.bind(Endpoint.any());
 
-          await receiver.listen((datagram) {});
+      await receiver.listen((datagram) {});
 
-          await Future.delayed(Duration(seconds: 10));
+      await Future.delayed(Duration(seconds: 10));
 
-          receiver.close();
+      receiver.close();
 
-          expect(receiver.closed, isTrue);
-        });
+      expect(receiver.closed, isTrue);
+    });
   });
 }

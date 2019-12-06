@@ -51,7 +51,7 @@ class Port {
   /// [any] represents a random port available on the machine.
   ///
   /// It is up to the OS to decide for an appropriate port.
-  static const any = const Port(0);
+  static const any = Port(0);
 
   /// Creates a new [Port]
   const Port(this.value);
