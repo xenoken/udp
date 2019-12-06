@@ -1,9 +1,14 @@
+## 3.0.1
+
+- Minor improvements
+
 ## 3.0.0
 
-- Added: Muticast support.
-- Change: the 'timeout' parameter of UDP.listen is now optional. udp instance are now capable of listening forever.
-- Change: Endpoint.IsBroadcast is now a readonly property.
-- Change: int Endpoint.unicast, port is now optional. 
+- Added: Multicast support !
+- Change: the 'timeout' parameter of 'UDP.listen' is now optional. UDP instances can listen indefinitely now.
+- Change: 'Endpoint.IsBroadcast' is now a readonly property.
+- Change: in 'Endpoint.unicast', port is now optional. 
+- Change: 'UDP.listen' returns a Future<bool>.
 
 ## 2.0.0
 

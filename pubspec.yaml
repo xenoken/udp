@@ -1,6 +1,6 @@
 name: udp
 description: Lightweight, efficient, and easy-to-use UDP library for Dart. Supports Unicast, Broadcast, Multicast and Loopback communications.
-version: 3.0.0
+version: 3.0.1
 homepage: https://github.com/xenoken/udp
 repository: https://github.com/xenoken/udp
 issue_tracker: https://github.com/xenoken/udp/issues
