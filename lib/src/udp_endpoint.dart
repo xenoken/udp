@@ -64,22 +64,22 @@ class Endpoint {
 
   /// Creates a Unicast endpoint.
   Endpoint.unicast(this._address, {Port port = Port.any}) {
-    this._port = port;
+    _port = port;
   }
 
   /// Creates a Broadcast endpoint.
   Endpoint.broadcast({Port port = Port.any}) {
-    this._address = InternetAddress("255.255.255.255");
-    this._port = port;
-    this._isBroadcast = true;
+    this._address = InternetAddress('255.255.255.255');
+    _port = port;
+    _isBroadcast = true;
   }
 
   /// An endpoint with the address of the local machine 127.0.0.1.
   ///
   /// [port] represents the port the endpoint is bound to.
   Endpoint.loopback({Port port = Port.any}) {
-    this._address = InternetAddress.loopbackIPv4;
-    this._port = port;
+    _address = InternetAddress.loopbackIPv4;
+    _port = port;
   }
 
   /// Creates a Multicast endpoint.
@@ -87,16 +87,16 @@ class Endpoint {
   /// [_address] should be a valid Multicast address in the range 224.0.0.0
   /// to 239.255.255.255.
   Endpoint.multicast(this._address, {Port port = Port.any}) {
-    this._port = port;
-    this._isMulticast = true;
+    _port = port;
+    _isMulticast = true;
   }
 
   /// Creates a random Endpoint.
   ///
   /// The OS will choose an appropriate [InternetAddress] and [Port].
   Endpoint.any({port = Port.any}) {
-    this._address = InternetAddress.anyIPv4;
-    this._port = port;
+    _address = InternetAddress.anyIPv4;
+    _port = port;
   }
 
   // internal constructor.

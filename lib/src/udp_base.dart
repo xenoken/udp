@@ -52,7 +52,7 @@ class UDP {
 
   StreamSubscription _streamSubscription;
 
-  Endpoint _localep;
+  final Endpoint _localep;
 
   /// the [Endpoint] this [UDP] instance is bound to.
   Endpoint get local => _localep;

@@ -35,15 +35,15 @@
 import 'dart:io';
 import 'package:udp/udp.dart';
 
-main() async {
+void main() async {
   // creates a UDP instance and binds it to the local address and the port 42.
   var sender = await UDP.bind(Endpoint.loopback(port: Port(42)));
 
   // send a simple string to a broadcast endpoint on port 21.
   var dataLength =
-      sender.send("Hello World!".codeUnits, Endpoint.broadcast(port: Port(21)));
+      sender.send('Hello World!'.codeUnits, Endpoint.broadcast(port: Port(21)));
 
-  stdout.write("${dataLength} bytes sent.");
+  stdout.write('${dataLength} bytes sent.');
 
   // creates a new UDP instance and binds it to the local address and the port
   // 39.
