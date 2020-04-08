@@ -1,3 +1,6 @@
+## 3.0.3
+- Changes to README.md
+
 ## 3.0.2
 
 - Package Maintenance.
