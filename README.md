@@ -65,4 +65,4 @@ main() async {
 
 Please file feature requests and bugs at the [issue tracker][tracker].
 
-[tracker]: http://github.com/xenoken/udp/issues
+[tracker]: https://github.com/xenoken/udp/issues
