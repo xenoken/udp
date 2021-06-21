@@ -46,7 +46,7 @@ void main() {
     test("Unicast", () async {
       String result = "";
 
-      UDP receiver, sender;
+      UDP? receiver, sender;
 
       waitFor(Future.wait([
         UDP
@@ -55,7 +55,7 @@ void main() {
             .then((udp) {
           receiver = udp;
           return udp.listen((dgram) {
-            result = String.fromCharCodes(dgram.data);
+            result = String.fromCharCodes(dgram!.data);
           }, timeout: Duration(seconds: 5));
         }),
         UDP
@@ -79,13 +79,13 @@ void main() {
     test("Loopback", () async {
       String result = "";
 
-      UDP receiver, sender;
+      UDP? receiver, sender;
 
       waitFor(Future.wait([
         UDP.bind(Endpoint.loopback(port: Port(42))).then((udp) {
           receiver = udp;
           return udp.listen((dgram) {
-            result = String.fromCharCodes(dgram.data);
+            result = String.fromCharCodes(dgram!.data);
           }, timeout: Duration(seconds: 5));
         }),
         UDP.bind(Endpoint.loopback(port: Port(24))).then((udp) {
@@ -106,12 +106,12 @@ void main() {
     test("Broadcast", () async {
       String result = "";
 
-      UDP receiver, sender;
+      UDP? receiver, sender;
       waitFor(Future.wait([
         UDP.bind(Endpoint.any(port: Port(42))).then((udp) {
           receiver = udp;
           return udp.listen((dgram) {
-            result = String.fromCharCodes(dgram.data);
+            result = String.fromCharCodes(dgram!.data);
           }, timeout: Duration(seconds: 5));
         }),
         UDP.bind(Endpoint.any(port: Port(24))).then((udp) {
@@ -132,7 +132,7 @@ void main() {
     test("Multicast", () async {
       String result = "";
 
-      UDP receiver, sender;
+      UDP? receiver, sender;
 
       var multicastEndpoint =
           Endpoint.multicast(InternetAddress("239.1.2.3"), port: Port(4540));
@@ -146,7 +146,7 @@ void main() {
         }),
         UDP.bind(Endpoint.any()).then((udp) {
           sender = udp;
-          return sender.send("Foo".codeUnits, multicastEndpoint);
+          return sender!.send("Foo".codeUnits, multicastEndpoint);
         })
       ]));
 
@@ -168,13 +168,13 @@ void main() {
       String value = 'original';
 
       await receiver.listen((datagram) {
-        print(String.fromCharCodes(datagram.data));
+        print(String.fromCharCodes(datagram!.data));
       }, timeout: Duration(seconds: 5));
 
       // this listen request doesn't do anything.
       await receiver.listen((datagram) {
         value = 'modified';
-        print(String.fromCharCodes(datagram.data));
+        print(String.fromCharCodes(datagram!.data));
       }, timeout: Duration(seconds: 5));
 
       await udp.send("Foo".codeUnits, Endpoint.broadcast());
@@ -199,7 +199,7 @@ void main() {
       udp.close(); // trying to see what happens if a send or receive method is called on a closed udp instance.
 
       await receiver.listen((datagram) {
-        print(String.fromCharCodes(datagram.data));
+        print(String.fromCharCodes(datagram!.data));
       }, timeout: Duration(seconds: 5));
 
       var dataLength = await udp.send("Foo".codeUnits, Endpoint.broadcast());
