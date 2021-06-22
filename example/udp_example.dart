@@ -53,7 +53,7 @@ main() async {
 
   // receiving\listening
   await receiver.listen((datagram) {
-    var str = String.fromCharCodes(datagram.data);
+    var str = String.fromCharCodes(datagram!.data);
     stdout.write(str);
   }, timeout: Duration(seconds: 20));
 

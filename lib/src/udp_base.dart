@@ -37,7 +37,7 @@ import 'dart:io';
 
 import 'udp_endpoint.dart';
 
-typedef DatagramCallback = void Function(Datagram);
+typedef DatagramCallback = void Function(Datagram?);
 
 /// [UDP] sends or receives UDP packets.
 ///
@@ -50,17 +50,17 @@ class UDP {
   /// returns True if this [UDP] instance is closed.
   bool get closed => _closed;
 
-  StreamSubscription _streamSubscription;
+  StreamSubscription? _streamSubscription;
 
   final Endpoint _localep;
 
   /// the [Endpoint] this [UDP] instance is bound to.
   Endpoint get local => _localep;
 
-  RawDatagramSocket _socket;
+  RawDatagramSocket? _socket;
 
   /// a reference to underlying [RawDatagramSocket].
-  RawDatagramSocket get socket => _socket;
+  RawDatagramSocket? get socket => _socket;
 
   // internal ctor
   UDP._(this._localep);
@@ -79,12 +79,12 @@ class UDP {
       ep = Endpoint.any(port: localEndpoint.port);
     }
 
-    return await RawDatagramSocket.bind(ep.address, ep.port.value)
+    return await RawDatagramSocket.bind(ep.address, ep.port!.value)
         .then((socket) {
       var udp = UDP._(localEndpoint);
 
       if (localEndpoint.isMulticast) {
-        socket.joinMulticast(localEndpoint.address);
+        socket.joinMulticast(localEndpoint.address!);
       }
 
       udp._socket = socket;
@@ -104,16 +104,16 @@ class UDP {
     if (_socket == null || _closed) return -1;
 
     return Future.microtask(() async {
-      var prevState = _socket.broadcastEnabled;
+      var prevState = _socket!.broadcastEnabled;
 
       if (remoteEndpoint.isBroadcast) {
-        _socket.broadcastEnabled = true;
+        _socket!.broadcastEnabled = true;
       }
 
       var _dataCount =
-          _socket.send(data, remoteEndpoint.address, remoteEndpoint.port.value);
+          _socket!.send(data, remoteEndpoint.address!, remoteEndpoint.port!.value);
 
-      _socket.broadcastEnabled = prevState;
+      _socket!.broadcastEnabled = prevState;
 
       return _dataCount;
     });
@@ -139,7 +139,7 @@ class UDP {
   /// - the udp internal state is not valid (e.g. no valid socket);
   ///
   /// the returned value is true otherwise.
-  Future<bool> listen(DatagramCallback callback, {Duration timeout}) async {
+  Future<bool> listen(DatagramCallback callback, {Duration? timeout}) async {
     // callback must not be null.
     assert(callback != null);
 
@@ -147,9 +147,9 @@ class UDP {
 
     _listening = true;
 
-    _streamSubscription = _socket.listen((event) {
+    _streamSubscription = _socket!.listen((event) {
       if (event == RawSocketEvent.read) {
-        callback(_socket.receive());
+        callback(_socket!.receive());
       }
     });
 
