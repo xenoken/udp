@@ -40,15 +40,15 @@ import 'udp_port.dart';
 ///
 /// Bundles an [InternetAddress] and a [Port].
 class Endpoint {
-  InternetAddress _address;
+  InternetAddress? _address;
 
   /// The address of this endpoint.
-  InternetAddress get address => _address;
+  InternetAddress? get address => _address;
 
-  Port _port;
+  Port? _port;
 
   /// The port of this endpoint.
-  Port get port => _port;
+  Port? get port => _port;
 
   /// Whether the endpoint is a broadcast endpoint.
   bool _isBroadcast = false;
