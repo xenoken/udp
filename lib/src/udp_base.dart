@@ -110,8 +110,8 @@ class UDP {
         _socket!.broadcastEnabled = true;
       }
 
-      var _dataCount =
-          _socket!.send(data, remoteEndpoint.address!, remoteEndpoint.port!.value);
+      var _dataCount = _socket!
+          .send(data, remoteEndpoint.address!, remoteEndpoint.port!.value);
 
       _socket!.broadcastEnabled = prevState;
 

@@ -1,3 +1,6 @@
+## 4.0.1
+- Fixed formatting
+
 ## 4.0.0
 - Migration to null safety.
 - Minor changes.
