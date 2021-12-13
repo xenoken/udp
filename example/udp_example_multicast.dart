@@ -48,7 +48,7 @@ main() async {
 
   unawaited(receiver.listen((datagram) {
     if (datagram != null) {
-      var str = String.fromCharCodes(datagram?.data);
+      var str = String.fromCharCodes(datagram.data);
 
       stdout.write(str);
     }

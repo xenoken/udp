@@ -1,3 +1,7 @@
+## 4.0.0
+- Migration to null safety.
+- Minor changes.
+
 ## 3.0.3
 - Changes to README.md
 
