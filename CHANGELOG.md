@@ -1,3 +1,6 @@
+## 5.0.1
+- Updated README.md.
+
 ## 5.0.0
 - removed "UDP.listen" method.
 - added "UDP.asStream" method.
