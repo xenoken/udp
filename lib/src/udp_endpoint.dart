@@ -69,7 +69,7 @@ class Endpoint {
 
   /// Creates a Broadcast endpoint.
   Endpoint.broadcast({Port port = Port.any}) {
-    this._address = InternetAddress('255.255.255.255');
+    _address = InternetAddress('255.255.255.255');
     _port = port;
     _isBroadcast = true;
   }

@@ -1,3 +1,8 @@
+## 5.0.0
+- removed "UDP.listen" method.
+- added "UDP.asStream" method.
+- Minor changes.
+
 ## 4.0.1
 - Fixed formatting
 

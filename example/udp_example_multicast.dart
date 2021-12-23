@@ -34,27 +34,26 @@
 
 import 'dart:io';
 
-import 'package:pedantic/pedantic.dart';
 import 'package:udp/udp.dart';
 
 main() async {
   // MULTICAST
   var multicastEndpoint =
-      Endpoint.multicast(InternetAddress("239.1.2.3"), port: Port(54321));
+      Endpoint.multicast(InternetAddress('239.1.2.3'), port: Port(54321));
 
   var receiver = await UDP.bind(multicastEndpoint);
 
   var sender = await UDP.bind(Endpoint.any());
 
-  unawaited(receiver.listen((datagram) {
+  receiver.asStream().listen((datagram) {
     if (datagram != null) {
       var str = String.fromCharCodes(datagram.data);
 
       stdout.write(str);
     }
-  }));
+  });
 
-  await sender.send("Foo".codeUnits, multicastEndpoint);
+  await sender.send('Foo'.codeUnits, multicastEndpoint);
 
   await Future.delayed(Duration(seconds: 5));
 

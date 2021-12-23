@@ -34,6 +34,7 @@
 
 import 'dart:async';
 import 'dart:io';
+import 'dart:collection';
 
 import 'udp_endpoint.dart';
 
@@ -43,26 +44,38 @@ typedef DatagramCallback = void Function(Datagram?);
 ///
 /// a [UDP] instance can send packets to or receive packets from [Endpoint]s.
 class UDP {
-  bool _listening = false;
-
-  bool _closed = false;
-
-  /// returns True if this [UDP] instance is closed.
+  /// Returns True if this [UDP] instance is closed.
   bool get closed => _closed;
 
-  StreamSubscription? _streamSubscription;
-
-  final Endpoint _localep;
-
-  /// the [Endpoint] this [UDP] instance is bound to.
+  /// The [Endpoint] this [UDP] instance is bound to.
   Endpoint get local => _localep;
 
-  RawDatagramSocket? _socket;
-
-  /// a reference to underlying [RawDatagramSocket].
+  /// Reference to underlying [RawDatagramSocket].
   RawDatagramSocket? get socket => _socket;
 
-  // internal ctor
+  // Reference to the local endpoint
+  final Endpoint _localep;
+
+  // Reference to the internal socket
+  RawDatagramSocket? _socket;
+
+  // Reference to the socket broadcast stream
+  Stream? _socketBroadcastStream;
+
+  // Reference to the UDP instance broadcast stream
+  Stream<Datagram?>? _udpBroadcastStream;
+
+  // Reference to the internal stream controller
+  StreamController? _streamController;
+
+  // Stores the set of internal stream subscriptions
+  final HashSet<StreamSubscription> _streamSubscriptions =
+      HashSet<StreamSubscription>();
+
+  // Is the UDP instance closed?
+  bool _closed = false;
+
+  // Internal ctor
   UDP._(this._localep);
 
   /// Creates a new [UDP] instance.
@@ -74,23 +87,15 @@ class UDP {
   /// returns the [UDP] instance.
   static Future<UDP> bind(Endpoint localEndpoint) async {
     var ep = localEndpoint;
+    var socket = await RawDatagramSocket.bind(ep.address, ep.port!.value);
+    var udp = UDP._(localEndpoint);
 
     if (localEndpoint.isMulticast) {
-      ep = Endpoint.any(port: localEndpoint.port);
+      socket.joinMulticast(localEndpoint.address!);
     }
 
-    return await RawDatagramSocket.bind(ep.address, ep.port!.value)
-        .then((socket) {
-      var udp = UDP._(localEndpoint);
-
-      if (localEndpoint.isMulticast) {
-        socket.joinMulticast(localEndpoint.address!);
-      }
-
-      udp._socket = socket;
-
-      return udp;
-    });
+    udp._socket = socket;
+    return udp;
   }
 
   /// Sends some [data] to a [remoteEndpoint].
@@ -122,53 +127,53 @@ class UDP {
   /// Tells the [UDP] instance to listen for incoming messages.
   ///
   /// Optionally, a [timeout] can be specified. if it is, the [UDP] instance
-  /// stops listening after the duration has passed.
+  /// stops listening after the duration has passed. The instance is closed too,
+  /// making the instance unusable after the timeout runs out.
   ///
-  /// whenever new data is received, it is bundled in a [Datagram] and passed
-  /// to the specified [callback].
+  /// Whenever new data is received, it is bundled in a [Datagram] and pushed into the stream.
   ///
-  /// A udp instance can be listened to only once.
-  ///
-  /// returns a [Future] that completes when the time runs out.
-  /// the returned value is false if:
-  ///
-  /// - the udp instance was already listened to;
-  ///
-  /// - the udp instance is closed;
-  ///
-  /// - the udp internal state is not valid (e.g. no valid socket);
-  ///
-  /// the returned value is true otherwise.
-  Future<bool> listen(DatagramCallback callback, {Duration? timeout}) async {
-    // callback must not be null.
-    assert(callback != null);
+  /// Returns a [Stream] that can be listened to.
+  Stream<Datagram?> asStream({Duration? timeout}) {
+    _streamController ??= StreamController<Datagram>();
 
-    if (_socket == null || _closed || _listening) return Future.value(false);
+    _udpBroadcastStream ??= (_streamController as StreamController<Datagram?>)
+        .stream
+        .asBroadcastStream();
 
-    _listening = true;
+    if (_socket == null || _closed) return _udpBroadcastStream!;
 
-    _streamSubscription = _socket!.listen((event) {
-      if (event == RawSocketEvent.read) {
-        callback(_socket!.receive());
+    if (_socketBroadcastStream == null) {
+      _socketBroadcastStream = _socket!.asBroadcastStream();
+
+      var streamSubscription = _socketBroadcastStream!.listen((event) {
+        if (event == RawSocketEvent.read) {
+          (_streamController as StreamController<Datagram?>)
+              .add(_socket!.receive());
+        }
+      });
+
+      if (!_streamSubscriptions.contains(streamSubscription)) {
+        _streamSubscriptions.add(streamSubscription);
       }
-    });
+    }
 
-    if (timeout == null) return Future.value(true);
+    if (timeout == null) return _udpBroadcastStream!;
 
-    return Future.delayed(timeout).then((value) {
-      _streamSubscription?.cancel();
-      return true;
-    });
+    Future.delayed(timeout).then((value) => close());
+
+    return _udpBroadcastStream!;
   }
 
-  /// closes the [UDP] instance and the underlying socket.
+  /// Closes the [UDP] instance and the underlying socket.
   void close() {
-    _listening = false;
-
     _closed = true;
-
-    _streamSubscription?.cancel();
-
     _socket?.close();
+    _socket = null;
+    _socketBroadcastStream = null;
+    _streamController?.close();
+    _streamSubscriptions.forEach((streamSubscription) {
+      streamSubscription.cancel();
+    });
+    _streamSubscriptions.clear();
   }
 }
