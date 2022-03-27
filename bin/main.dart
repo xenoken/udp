@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright 2019 Kennedy Tochukwu Ekeoha
+ *  Copyright 2019-2022 Kennedy Tochukwu Ekeoha
  *
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions

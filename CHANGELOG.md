@@ -1,3 +1,8 @@
+## 5.0.2
+- Fixed an exception occurring when binding UDP receivers bound to a multicast endpoint.
+- Added additional documentation for Endpoints.
+- Minor changes.
+
 ## 5.0.1
 - Updated README.md.
 

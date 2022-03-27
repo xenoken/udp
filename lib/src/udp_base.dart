@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright 2019 Kennedy Tochukwu Ekeoha
+ *  Copyright 2019-2022 Kennedy Tochukwu Ekeoha
  *
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions
@@ -82,19 +82,20 @@ class UDP {
   ///
   /// The [UDP] instance is created by the OS and bound to a local [Endpoint].
   ///
-  /// [localEndpoint] - the local endpoint.
+  /// [ep] - the local endpoint.
   ///
   /// returns the [UDP] instance.
-  static Future<UDP> bind(Endpoint localEndpoint) async {
-    var ep = localEndpoint;
-    var socket = await RawDatagramSocket.bind(ep.address, ep.port!.value);
-    var udp = UDP._(localEndpoint);
+  static Future<UDP> bind(Endpoint ep) async {
+    var udp = UDP._(ep);
 
-    if (localEndpoint.isMulticast) {
-      socket.joinMulticast(localEndpoint.address!);
+    if (ep.isMulticast) {
+      var anyAddress = InternetAddress.anyIPv4;
+      udp._socket = await RawDatagramSocket.bind(anyAddress, ep.port!.value);
+      udp._socket!.joinMulticast(ep.address!);
+    } else {
+      udp._socket = await RawDatagramSocket.bind(ep.address!, ep.port!.value);
     }
 
-    udp._socket = socket;
     return udp;
   }
 

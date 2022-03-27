@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright 2019 Kennedy Tochukwu Ekeoha 
+ *  Copyright 2019-2022 Kennedy Tochukwu Ekeoha 
  *  
  *  Redistribution and use in source and binary forms, with or without 
  *  modification, are permitted provided that the following conditions 
@@ -210,7 +210,7 @@ void main() {
     /*
     UDP.Close() sets UDP.closed to TRUE
     */
-    test('closed is True for closed udp instances.', () async {
+    test('The property "closed" is True for closed udp instances.', () async {
       var udp = await UDP.bind(Endpoint.loopback());
 
       var receiver = await UDP.bind(Endpoint.loopback());
@@ -228,7 +228,7 @@ void main() {
     test('UDP listen can run forever if no timeout is set.', () async {
       var receiver = await UDP.bind(Endpoint.any());
 
-      receiver.asStream(timeout: Duration(seconds: 5)).listen((datagram) {});
+      receiver.asStream(timeout: null).listen((datagram) {});
 
       await Future.delayed(Duration(seconds: 5));
 

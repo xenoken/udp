@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright 2019 Kennedy Tochukwu Ekeoha 
+ *  Copyright 2019-2022 Kennedy Tochukwu Ekeoha 
  *  
  *  Redistribution and use in source and binary forms, with or without 
  *  modification, are permitted provided that the following conditions 
@@ -36,7 +36,7 @@ import 'dart:io';
 
 import 'package:udp/udp.dart';
 
-main() async {
+void main() async {
   // MULTICAST
   var multicastEndpoint =
       Endpoint.multicast(InternetAddress('239.1.2.3'), port: Port(54321));

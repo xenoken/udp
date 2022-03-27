@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright 2019 Kennedy Tochukwu Ekeoha 
+ *  Copyright 2019-2022 Kennedy Tochukwu Ekeoha 
  *  
  *  Redistribution and use in source and binary forms, with or without 
  *  modification, are permitted provided that the following conditions 
@@ -36,7 +36,7 @@ import 'dart:io';
 
 import 'package:udp/udp.dart';
 
-main() async {
+void main() async {
   // creates a UDP instance and binds it to the first available network
   // interface on port 65000.
   var sender = await UDP.bind(Endpoint.any(port: Port(65000)));
@@ -45,7 +45,7 @@ main() async {
   var dataLength = await sender.send(
       'Hello World!'.codeUnits, Endpoint.broadcast(port: Port(65001)));
 
-  stdout.write('${dataLength} bytes sent.');
+  stdout.write('$dataLength bytes sent.');
 
   // creates a new UDP instance and binds it to the local address and the port
   // 65002.
