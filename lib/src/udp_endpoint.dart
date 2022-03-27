@@ -66,10 +66,12 @@ class Endpoint {
 
   /// Creates a Unicast endpoint.
   ///
-  /// [_address] should be a valid Multicast address in the range 224.0.0.0
+  /// [_address] is the address to use for binding or sending.
+  /// 
   /// [port] represents the port the endpoint is bound to.
+  /// 
   /// A UDP instance can bind to a [Endpoint.unicast] endpoint only if any of the network interfaces available is bound to the [Endpoint.unicast] endpoint's address.
-  /// As a sender, A UDP instance can send data to [Endpoint.unicast] endpoints.
+  /// As a sender, a UDP instance can send data to [Endpoint.unicast] endpoints.
   Endpoint.unicast(this._address, {Port port = Port.any}) {
     _port = port;
   }
@@ -77,8 +79,9 @@ class Endpoint {
   /// Creates a Broadcast endpoint.
   ///
   /// [port] represents the port the endpoint is bound to.
+  /// 
   /// A UDP instance cannot bind to a [Endpoint.broadcast] endpoint.
-  /// As a sender, A UDP instance can send data to the [Endpoint.broadcast] endpoint.
+  /// As a sender, a UDP instance can send data to the [Endpoint.broadcast] endpoint.
   Endpoint.broadcast({Port port = Port.any}) {
     _address = InternetAddress('255.255.255.255');
     _port = port;
@@ -88,8 +91,9 @@ class Endpoint {
   /// Creates a Loopback endpoint bound to the address of the local machine (127.0.0.1).
   ///
   /// [port] represents the port the endpoint is bound to.
+  /// 
   /// A UDP instance can bind to a [Endpoint.loopback] endpoint as a sender or as a receiver.
-  /// As a sender, A UDP instance can send data to a [Endpoint.loopback] endpoint.
+  /// As a sender, a UDP instance can send data to a [Endpoint.loopback] endpoint.
   Endpoint.loopback({Port port = Port.any}) {
     _address = InternetAddress.loopbackIPv4;
     _port = port;
@@ -99,9 +103,11 @@ class Endpoint {
   ///
   /// [_address] should be a valid Multicast address in the range 224.0.0.0
   /// to 239.255.255.255.
+  /// 
   /// [port] represents the port the endpoint is bound to.
+  /// 
   /// A UDP instance can bind to a [Endpoint.multicast] endpoint only as a receiver.
-  /// As a sender, A UDP instance can send data to [Endpoint.multicast] endpoints.
+  /// As a sender, a UDP instance can send data to [Endpoint.multicast] endpoints.
   Endpoint.multicast(this._address, {Port port = Port.any}) {
     _port = port;
     _isMulticast = true;
@@ -109,15 +115,17 @@ class Endpoint {
 
   /// Creates a random Endpoint.
   ///
+  /// [port] represents the port the endpoint is bound to.
+  /// 
   /// The OS will choose an appropriate [InternetAddress] and [Port].
   /// A UDP instance can bind to a [Endpoint.any] endpoint as a sender or as a receiver.
-  /// As a sender, A UDP instance can send data to [Endpoint.any] endpoints.
+  /// As a sender, a UDP instance can send data to [Endpoint.any] endpoints.
   Endpoint.any({port = Port.any}) {
     _address = InternetAddress.anyIPv4;
     _port = port;
   }
 
-  // internal constructor.
+  /// internal constructor.
   // ignore_for_file: unused_element
   Endpoint._(this._address, this._port);
 }
